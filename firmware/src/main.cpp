@@ -110,10 +110,6 @@ void setup()
     mpu.setGyroRange(MPU6050_RANGE_250_DEG);
     mpu.setCycleRate(MPU6050_CYCLE_40_HZ);
 
-    #ifdef DEBUG
-    Serial.begin(115200);
-    #endif
-
     WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
