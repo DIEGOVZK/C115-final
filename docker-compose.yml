@@ -1,0 +1,10 @@
+version: '3'
+services:
+  broker: 
+    build:
+      context: ./broker
+      dockerfile: ./broker/Dockerfile
+    image: mqtt:broker
+    container_name: broker
+    ports:
+      - "4000:4000"
