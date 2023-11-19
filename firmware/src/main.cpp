@@ -94,7 +94,7 @@ void loop()
     }
 
     #ifdef DEBUG
-    Serial.printf("\raccX:%.3f,accY:%.3f,accZ:%.3f", accX, accY, accZ);
+    Serial.printf("\raccX:%.3f,accY:%.3f,accZ:%.3f,", accX, accY, accZ);
     Serial.printf("gyroX:%.3f,gyroY:%.3f,gyroZ:%.3f\n", gyroX, gyroY, gyroZ);
     #endif
 }
