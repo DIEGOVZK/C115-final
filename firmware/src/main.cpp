@@ -71,7 +71,7 @@ void post_to_mqtt()
         gyroZ[i] = data[index][5];
     }
 
-    StaticJsonDocument<1024> doc;
+    StaticJsonDocument<4096> doc;
     JsonArray accXJson = doc.createNestedArray("accX");
     JsonArray accYJson = doc.createNestedArray("accY");
     JsonArray accZJson = doc.createNestedArray("accZ");
