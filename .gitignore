@@ -1,3 +1,4 @@
 .pio
 firmware/include/LocalCredentials.h
 *.FCBak
+hardware/local_refs/*
