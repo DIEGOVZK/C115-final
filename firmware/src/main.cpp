@@ -59,18 +59,6 @@ void read_mpu()
 
 void post_to_mqtt()
 {
-    float accX[40], accY[40], accZ[40], gyroX[40], gyroY[40], gyroZ[40];
-
-    for (int i = 0; i < 40; i++) {
-        int index = (data_index + i) % 40;
-        accX[i] = data[index][0];
-        accY[i] = data[index][1];
-        accZ[i] = data[index][2];
-        gyroX[i] = data[index][3];
-        gyroY[i] = data[index][4];
-        gyroZ[i] = data[index][5];
-    }
-
     StaticJsonDocument<2048> doc;
     JsonArray accXJson = doc.createNestedArray("accX");
     JsonArray accYJson = doc.createNestedArray("accY");
@@ -80,12 +68,13 @@ void post_to_mqtt()
     JsonArray gyroZJson = doc.createNestedArray("gyroZ");
 
     for (int i = 0; i < 40; i++) {
-        accXJson.add(accX[i]);
-        accYJson.add(accY[i]);
-        accZJson.add(accZ[i]);
-        gyroXJson.add(gyroX[i]);
-        gyroYJson.add(gyroY[i]);
-        gyroZJson.add(gyroZ[i]);
+        int index = (data_index + i) % 40;
+        accXJson.add(data[index][0]);
+        accYJson.add(data[index][1]);
+        accZJson.add(data[index][2]);
+        gyroXJson.add(data[index][3]);
+        gyroYJson.add(data[index][4]);
+        gyroZJson.add(data[index][5]);
     }
 
     String output;
