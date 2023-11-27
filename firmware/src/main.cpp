@@ -122,7 +122,7 @@ void setup()
     mqttClient.connect();
 
     os_timer_setfn(&ms50, ms50_isr, NULL);
-    os_timer_arm(&ms50, 25, true);
+    os_timer_arm(&ms50, 50, true);
 
     os_timer_setfn(&ms1000, ms1000_isr, NULL);
     os_timer_arm(&ms1000, 1000, true);
