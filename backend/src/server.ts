@@ -1,5 +1,6 @@
 import { WebSocketServer } from "./websocket.server";
 import { MqttClient } from "./mqtt.client";
+import 'dotenv/config'
 
 const PORT = 3001;
 const webSocketServer = new WebSocketServer(PORT);
