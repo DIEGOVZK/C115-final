@@ -10,7 +10,8 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-import { Box } from "@mui/material";
+import { Box, Typography, TextField, Button } from "@mui/material";
+import { updateAccX, updateAccY, updateAccZ, updateGyroX, updateGyroY, updateGyroZ } from "./axios.client";
 
 ChartJS.register(
   CategoryScale,
@@ -28,14 +29,82 @@ export const options = {
     legend: {
       position: "top",
     },
-    // title: {
-    //   display: true,
-    //   text: "Chart.js Line Chart",
-    // },
   },
 };
 
-const labels = Array.from({ length: 21 }, (_, index) => index).reverse();
+const labels = Array.from({ length: 4001 }, (_, index) => index).reverse();
+const grayBG = "#BFBFBF";
+const blueBG = "#0E1C36";
+const whiteBG = "#FFF";
+
+const styles = {
+  container: {
+    display: "flex",
+    height: "100vh",
+    width: "100vw",
+    background: grayBG,
+  },
+
+  sidebar: {
+    width: "20%",
+    background: blueBG,
+    color: "#FFF",
+    p: "1.3rem",
+  },
+
+  graphContainer: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    width: "100%",
+  },
+
+  graphBox: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  graphStyle: {
+    height: "17rem",
+    width: "40rem",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    mb: "20px",
+    p: "0.625rem",
+    background: whiteBG,
+    margin: "0.625rem auto",
+  },
+
+  limitsTitleAlign: {
+    textAlign: "left",
+  },
+
+  limitsInput: {
+    background: "white",
+    border: "solid 1px",
+    borderColor: "#000",
+    width: "50%",
+  },
+
+  limitsBox: {
+    display: "flex",
+    mb: "0.4rem",
+  },
+
+  setLimitButton: {
+    background: '#eb8334',
+    color: '#FFF',
+    fontWeight: 'bold',
+    borderRadius: 0,
+    width: '100%',
+    mb: '1rem',
+    "&:hover": {
+      backgroundColor: '#eb995b'
+    },
+  },
+};
 
 const accXdata = {
   labels,
@@ -118,9 +187,97 @@ function App() {
   const [gyroX, setGyroX] = useState(gyroXdata);
   const [gyroY, setGyroY] = useState(gyroYdata);
   const [gyroZ, setGyroZ] = useState(gyroZdata);
+
+  const [accXUpperLimit, setAccXUpperLimit] = useState('');
+  const [accYUpperLimit, setAccYUpperLimit] = useState('');
+  const [accZUpperLimit, setAccZUpperLimit] = useState('');
+
+  const [accXInferiorLimit, setAccXInferiorLimit] = useState('');
+  const [accYInferiorLimit, setAccYInferiorLimit] = useState('');
+  const [accZInferiorLimit, setAccZInferiorLimit] = useState('');
+
+  const [gyroXUpperLimit, setGyroXUpperLimit] = useState('');
+  const [gyroYUpperLimit, setGyroYUpperLimit] = useState('');
+  const [gyroZUpperLimit, setGyroZUpperLimit] = useState('');
+
+  const [gyroXInferiorLimit, setGyroXInferiorLimit] = useState('');
+  const [gyroYInferiorLimit, setGyroYInferiorLimit] = useState('');
+  const [gyroZInferiorLimit, setGyroZInferiorLimit] = useState('');
+
+  const maxLen = 10000;
+  const removeLen = 20;
+
   useMemo(() => {
     setSocket(new WebSocket("ws://localhost:3001"));
   }, []);
+
+  const updateData = (setData, newData) => {
+    setData((currentData) => {
+      const currentDataCopy = JSON.parse(JSON.stringify(currentData));
+      currentDataCopy.datasets[0].data = [
+        ...currentData.datasets[0].data,
+        ...newData,
+      ];
+      if (currentDataCopy.datasets[0].data.length > maxLen) {
+        currentDataCopy.datasets[0].data.slice(removeLen);
+      }
+      return currentDataCopy;
+    });
+  };
+
+  const updateAccXLimits = async () => {
+    const limits = {
+      upperLimit: accXUpperLimit,
+      inferiorLimit: accXInferiorLimit,
+    }
+
+    await updateAccX(limits);
+  }
+
+  const updateAccYLimits = async () => {
+    const limits = {
+      upperLimit: accYUpperLimit,
+      inferiorLimit: accYInferiorLimit,
+    }
+
+    await updateAccY(limits);
+  }
+
+  const updateAccZLimits = async () => {
+    const limits = {
+      upperLimit: accZUpperLimit,
+      inferiorLimit: accZInferiorLimit,
+    }
+
+    await updateAccZ(limits);
+  }
+
+  const updateGyroXLimits = async () => {
+    const limits = {
+      upperLimit: gyroXUpperLimit,
+      inferiorLimit: gyroXInferiorLimit,
+    }
+
+    await updateGyroX(limits);
+  }
+
+  const updateGyroYLimits = async () => {
+    const limits = {
+      upperLimit: gyroYUpperLimit,
+      inferiorLimit: gyroYInferiorLimit,
+    }
+
+    await updateGyroY(limits);
+  }
+
+  const updateGyroZLimits = async () => {
+    const limits = {
+      upperLimit: gyroZUpperLimit,
+      inferiorLimit: gyroZInferiorLimit,
+    }
+
+    await updateGyroZ(limits);
+  }
 
   useEffect(() => {
     socket.addEventListener("open", () => {
@@ -128,29 +285,14 @@ function App() {
     });
     socket.addEventListener("message", (event) => {
       const info = JSON.parse(event.data);
-      console.log('inf', info)
+      console.log("inf", info);
 
-      
-      const accXcopy = JSON.parse(JSON.stringify(accX));
-      const accYcopy = JSON.parse(JSON.stringify(accY));
-      const accZcopy = JSON.parse(JSON.stringify(accZ));
-      const gyroXcopy = JSON.parse(JSON.stringify(gyroX));
-      const gyroYcopy = JSON.parse(JSON.stringify(gyroY));
-      const gyroZcopy = JSON.parse(JSON.stringify(gyroZ));
-
-      accXcopy.datasets[0].data = info.accX
-      accYcopy.datasets[0].data = info.accY
-      accZcopy.datasets[0].data = info.accZ
-      gyroXcopy.datasets[0].data = info.gyroX
-      gyroYcopy.datasets[0].data = info.gyroY
-      gyroZcopy.datasets[0].data = info.gyroZ
-
-      setAccX(accXcopy);
-      setAccY(accYcopy);
-      setAccZ(accZcopy);
-      setGyroX(gyroXcopy);
-      setGyroY(gyroYcopy);
-      setGyroZ(gyroZcopy);
+      updateData(setAccX, info.accX);
+      updateData(setAccY, info.accY);
+      updateData(setAccZ, info.accZ);
+      updateData(setGyroX, info.gyroX);
+      updateData(setGyroY, info.gyroY);
+      updateData(setGyroZ, info.gyroZ);
     });
 
     socket.addEventListener("close", () => {
@@ -160,97 +302,247 @@ function App() {
   }, [socket]);
 
   return (
-    <Box
-      sx={{
-        height: "100vh",
-        width: "100vw",
-        background: "#000",
-        display: "flex",
-        margin: "0 auto",
-        flexDirection: "column",
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          width: "100%",
-          justifyContent: "space-around",
-          margin: "0 auto",
-        }}
-      >
-        <Box
-          sx={{
-            height: "300px",
-            width: "100%",
-          }}
-        >
-          <Line options={options} data={accX} />
-        </Box>
+    <Box sx={styles.container}>
+      <Box sx={styles.sidebar}>
+        <Box>
+          <Typography
+            sx={{
+              textAlign: "center",
+              mb: "2rem",
+            }}
+          >
+            Ajuste dos limiares de alertas
+          </Typography>
 
-        <Box
-          sx={{
-            height: "300px",
-            width: "100%",
-          }}
-        >
-          <Line options={options} data={accY} />
+          <Typography sx={styles.limitsTitleAlign}>ACCX</Typography>
+          <Box sx={styles.limitsBox}>
+            <TextField
+              label="Limite Inferior"
+              variant="filled"
+              color="warning"
+              sx={styles.limitsInput}
+              onChange={(e) => {
+                setAccXInferiorLimit(e.target.value);
+              }}
+            ></TextField>
+
+            <Typography
+              sx={{
+                textAlign: "left",
+              }}
+            ></Typography>
+            <TextField
+              label="Limite Superior"
+              variant="filled"
+              color="warning"
+              sx={styles.limitsInput}
+              onChange={(e) => {
+                setAccXUpperLimit(e.target.value);
+              }}
+            ></TextField>
+          </Box>
+          <Button 
+          onClick={() => updateAccXLimits()}
+          sx={styles.setLimitButton}>
+            Definir
+          </Button>
+
+          <Typography sx={styles.limitsTitleAlign}>ACCY</Typography>
+          <Box sx={styles.limitsBox}>
+            <TextField
+              label="Limite Inferior"
+              variant="filled"
+              color="warning"
+              sx={styles.limitsInput}
+              onChange={(e) => {
+                setAccYInferiorLimit(e.target.value);
+              }}
+            ></TextField>
+
+            <Typography
+              sx={{
+                textAlign: "left",
+              }}
+            ></Typography>
+            <TextField
+              label="Limite Superior"
+              variant="filled"
+              color="warning"
+              sx={styles.limitsInput}
+              onChange={(e) => {
+                setAccYUpperLimit(e.target.value);
+              }}
+            ></TextField>
+          </Box>
+          <Button 
+          onClick={() => updateAccYLimits()}
+          sx={styles.setLimitButton}>
+            Definir
+          </Button>
+
+          <Typography sx={styles.limitsTitleAlign}>ACCZ</Typography>
+          <Box sx={styles.limitsBox}>
+            <TextField
+              label="Limite Inferior"
+              variant="filled"
+              color="warning"
+              sx={styles.limitsInput}
+              onChange={(e) => {
+                setAccZInferiorLimit(e.target.value);
+              }}
+            ></TextField>
+
+            <Typography
+              sx={{
+                textAlign: "left",
+              }}
+            ></Typography>
+            <TextField
+              label="Limite Superior"
+              variant="filled"
+              color="warning"
+              sx={styles.limitsInput}
+              onChange={(e) => {
+                setAccZUpperLimit(e.target.value);
+              }}
+            ></TextField>
+          </Box>
+          <Button 
+          onClick={() => updateAccZLimits()}
+          sx={styles.setLimitButton}>
+            Definir
+          </Button>
+
+          <Typography sx={styles.limitsTitleAlign}>GYROX</Typography>
+          <Box sx={styles.limitsBox}>
+            <TextField
+              label="Limite Inferior"
+              variant="filled"
+              color="warning"
+              sx={styles.limitsInput}
+              onChange={(e) => {
+                setGyroXInferiorLimit(e.target.value);
+              }}
+            ></TextField>
+
+            <Typography
+              sx={{
+                textAlign: "left",
+              }}
+            ></Typography>
+            <TextField
+              label="Limite Superior"
+              variant="filled"
+              color="warning"
+              sx={styles.limitsInput}
+              onChange={(e) => {
+                setGyroXUpperLimit(e.target.value);
+              }}
+            ></TextField>
+          </Box>
+          <Button 
+          onClick={() => updateGyroXLimits()}
+          sx={styles.setLimitButton}>
+            Definir
+          </Button>
+
+          <Typography sx={styles.limitsTitleAlign}>GYROY</Typography>
+          <Box sx={styles.limitsBox}>
+            <TextField
+              label="Limite Inferior"
+              variant="filled"
+              color="warning"
+              sx={styles.limitsInput}
+              onChange={(e) => {
+                setGyroYInferiorLimit(e.target.value);
+              }}
+            ></TextField>
+
+            <Typography
+              sx={{
+                textAlign: "left",
+              }}
+            ></Typography>
+            <TextField
+              label="Limite Superior"
+              variant="filled"
+              color="warning"
+              sx={styles.limitsInput}
+              onChange={(e) => {
+                setGyroYUpperLimit(e.target.value);
+              }}
+            ></TextField>
+          </Box>
+          <Button 
+          onClick={() => updateGyroYLimits()}
+          sx={styles.setLimitButton}>
+            Definir
+          </Button>
+
+          <Typography sx={styles.limitsTitleAlign}>GYROZ</Typography>
+          <Box sx={styles.limitsBox}>
+            <TextField
+              label="Limite Inferior"
+              variant="filled"
+              color="warning"
+              sx={styles.limitsInput}
+              onChange={(e) => {
+                setGyroZInferiorLimit(e.target.value);
+              }}
+            ></TextField>
+
+            <Typography
+              sx={{
+                textAlign: "left",
+              }}
+            ></Typography>
+            <TextField
+              label="Limite Superior"
+              variant="filled"
+              color="warning"
+              sx={styles.limitsInput}
+              onChange={(e) => {
+                setGyroZUpperLimit(e.target.value);
+              }}
+            ></TextField>
+          </Box>
+          <Button 
+          onClick={() => updateGyroZLimits()}
+          sx={styles.setLimitButton}>
+            Definir
+          </Button>
         </Box>
       </Box>
 
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          width: "100%",
-          justifyContent: "space-around",
-          margin: "0 auto",
-        }}
-      >
-        <Box
-          sx={{
-            height: "300px",
-            width: "100%",
-          }}
-        >
-          <Line options={options} data={accZ} />
+      <Box sx={styles.graphContainer}>
+        <Box sx={styles.graphBox}>
+          <Box sx={styles.graphStyle}>
+            <Line options={options} data={accX} />
+          </Box>
+
+          <Box sx={styles.graphStyle}>
+            <Line options={options} data={accY} />
+          </Box>
         </Box>
 
-        <Box
-          sx={{
-            height: "300px",
-            width: "100%",
-          }}
-        >
-          <Line options={options} data={gyroX} />
-        </Box>
-      </Box>
+        <Box sx={styles.graphBox}>
+          <Box sx={styles.graphStyle}>
+            <Line options={options} data={accZ} />
+          </Box>
 
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          width: "100%",
-          justifyContent: "space-around",
-          margin: "0 auto",
-        }}
-      >
-        <Box
-          sx={{
-            height: "300px",
-            width: "100%",
-          }}
-        >
-          <Line options={options} data={gyroY} />
+          <Box sx={styles.graphStyle}>
+            <Line options={options} data={gyroX} />
+          </Box>
         </Box>
 
-        <Box
-          sx={{
-            height: "300px",
-            width: "100%",
-          }}
-        >
-          <Line options={options} data={gyroZ} />
+        <Box sx={styles.graphBox}>
+          <Box sx={styles.graphStyle}>
+            <Line options={options} data={gyroY} />
+          </Box>
+
+          <Box sx={styles.graphStyle}>
+            <Line options={options} data={gyroZ} />
+          </Box>
         </Box>
       </Box>
     </Box>
