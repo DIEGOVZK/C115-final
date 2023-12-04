@@ -5,10 +5,12 @@ import express from 'express';
 import { WebSocketServer } from "./websocket.server";
 import { MqttClient } from "./mqtt.client";
 import routes from './routes/routes';
-import { Alerts } from './services/alerts.services';
 
 mongoose.connect('mongodb://root:example@localhost:27017/admin')
-    .then(() => console.log('Connected!'));
+  .then(() => console.log('Conectado ao Banco de Dados!'))
+  .catch(error => {
+    console.log('ERRO:::', error)
+  })
 
 const PORT = 3001;
 const webSocketServer = new WebSocketServer(PORT);
@@ -25,5 +27,3 @@ app.use('/', routes);
 app.listen(HTTP_PORT, () => {
   console.log(`Servidor HTTP está rodando em http://localhost:${HTTP_PORT}`);
 });
-
-Alerts.getLimits()

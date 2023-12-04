@@ -37,7 +37,7 @@ export class Alerts {
     static async getLimits() {
         const limitsList = await Limit.getLimits();
 
-        limitsList.forEach((limit) => {
+        if(limitsList.length !== 0) limitsList.forEach((limit) => {
             Object.keys(this.limits).forEach((key) => {
                 if (key === limit.name) {
                     this.limits[key].upperLimit = limit.upperLimit;
