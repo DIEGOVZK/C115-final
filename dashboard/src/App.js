@@ -11,7 +11,7 @@ import {
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 import { Box, Typography, TextField, Button } from "@mui/material";
-import { updateAccX, updateAccY, updateAccZ, updateGyroX, updateGyroY, updateGyroZ } from "./axios.client";
+import { registerEmail, updateLimit } from "./axios.client";
 
 ChartJS.register(
   CategoryScale,
@@ -94,14 +94,22 @@ const styles = {
   },
 
   setLimitButton: {
-    background: '#eb8334',
-    color: '#FFF',
-    fontWeight: 'bold',
+    background: "#eb8334",
+    color: "#FFF",
+    fontWeight: "bold",
     borderRadius: 0,
-    width: '100%',
-    mb: '1rem',
+    width: "100%",
+    mb: "1rem",
     "&:hover": {
-      backgroundColor: '#eb995b'
+      backgroundColor: "#eb995b",
+    },
+  },
+
+  sendEmailButton: {
+    background: "#32a852",
+    color: "#FFF",
+    "&:hover": {
+      backgroundColor: "#5ba36f",
     },
   },
 };
@@ -188,21 +196,23 @@ function App() {
   const [gyroY, setGyroY] = useState(gyroYdata);
   const [gyroZ, setGyroZ] = useState(gyroZdata);
 
-  const [accXUpperLimit, setAccXUpperLimit] = useState('');
-  const [accYUpperLimit, setAccYUpperLimit] = useState('');
-  const [accZUpperLimit, setAccZUpperLimit] = useState('');
+  const [accXUpperLimit, setAccXUpperLimit] = useState("");
+  const [accYUpperLimit, setAccYUpperLimit] = useState("");
+  const [accZUpperLimit, setAccZUpperLimit] = useState("");
 
-  const [accXInferiorLimit, setAccXInferiorLimit] = useState('');
-  const [accYInferiorLimit, setAccYInferiorLimit] = useState('');
-  const [accZInferiorLimit, setAccZInferiorLimit] = useState('');
+  const [accXInferiorLimit, setAccXInferiorLimit] = useState("");
+  const [accYInferiorLimit, setAccYInferiorLimit] = useState("");
+  const [accZInferiorLimit, setAccZInferiorLimit] = useState("");
 
-  const [gyroXUpperLimit, setGyroXUpperLimit] = useState('');
-  const [gyroYUpperLimit, setGyroYUpperLimit] = useState('');
-  const [gyroZUpperLimit, setGyroZUpperLimit] = useState('');
+  const [gyroXUpperLimit, setGyroXUpperLimit] = useState("");
+  const [gyroYUpperLimit, setGyroYUpperLimit] = useState("");
+  const [gyroZUpperLimit, setGyroZUpperLimit] = useState("");
 
-  const [gyroXInferiorLimit, setGyroXInferiorLimit] = useState('');
-  const [gyroYInferiorLimit, setGyroYInferiorLimit] = useState('');
-  const [gyroZInferiorLimit, setGyroZInferiorLimit] = useState('');
+  const [gyroXInferiorLimit, setGyroXInferiorLimit] = useState("");
+  const [gyroYInferiorLimit, setGyroYInferiorLimit] = useState("");
+  const [gyroZInferiorLimit, setGyroZInferiorLimit] = useState("");
+
+  const [email, setEmail] = useState("");
 
   const maxLen = 10000;
   const removeLen = 20;
@@ -225,59 +235,18 @@ function App() {
     });
   };
 
-  const updateAccXLimits = async () => {
-    const limits = {
-      upperLimit: accXUpperLimit,
-      inferiorLimit: accXInferiorLimit,
-    }
+  const updateLimits = async (name, upperLimit, inferiorLimit) => {
+    const data = {
+      upperLimit,
+      inferiorLimit,
+      name,
+    };
+    await updateLimit(data);
+  };
 
-    await updateAccX(limits);
-  }
-
-  const updateAccYLimits = async () => {
-    const limits = {
-      upperLimit: accYUpperLimit,
-      inferiorLimit: accYInferiorLimit,
-    }
-
-    await updateAccY(limits);
-  }
-
-  const updateAccZLimits = async () => {
-    const limits = {
-      upperLimit: accZUpperLimit,
-      inferiorLimit: accZInferiorLimit,
-    }
-
-    await updateAccZ(limits);
-  }
-
-  const updateGyroXLimits = async () => {
-    const limits = {
-      upperLimit: gyroXUpperLimit,
-      inferiorLimit: gyroXInferiorLimit,
-    }
-
-    await updateGyroX(limits);
-  }
-
-  const updateGyroYLimits = async () => {
-    const limits = {
-      upperLimit: gyroYUpperLimit,
-      inferiorLimit: gyroYInferiorLimit,
-    }
-
-    await updateGyroY(limits);
-  }
-
-  const updateGyroZLimits = async () => {
-    const limits = {
-      upperLimit: gyroZUpperLimit,
-      inferiorLimit: gyroZInferiorLimit,
-    }
-
-    await updateGyroZ(limits);
-  }
+  const register = async () => {
+    await registerEmail(email);
+  };
 
   useEffect(() => {
     socket.addEventListener("open", () => {
@@ -285,7 +254,6 @@ function App() {
     });
     socket.addEventListener("message", (event) => {
       const info = JSON.parse(event.data);
-      console.log("inf", info);
 
       updateData(setAccX, info.accX);
       updateData(setAccY, info.accY);
@@ -308,7 +276,7 @@ function App() {
           <Typography
             sx={{
               textAlign: "center",
-              mb: "2rem",
+              mb: "1rem",
             }}
           >
             Ajuste dos limiares de alertas
@@ -341,9 +309,12 @@ function App() {
               }}
             ></TextField>
           </Box>
-          <Button 
-          onClick={() => updateAccXLimits()}
-          sx={styles.setLimitButton}>
+          <Button
+            onClick={() =>
+              updateLimits("accX", accXUpperLimit, accXInferiorLimit)
+            }
+            sx={styles.setLimitButton}
+          >
             Definir
           </Button>
 
@@ -374,9 +345,12 @@ function App() {
               }}
             ></TextField>
           </Box>
-          <Button 
-          onClick={() => updateAccYLimits()}
-          sx={styles.setLimitButton}>
+          <Button
+            onClick={() =>
+              updateLimits("accY", accYUpperLimit, accYInferiorLimit)
+            }
+            sx={styles.setLimitButton}
+          >
             Definir
           </Button>
 
@@ -407,9 +381,12 @@ function App() {
               }}
             ></TextField>
           </Box>
-          <Button 
-          onClick={() => updateAccZLimits()}
-          sx={styles.setLimitButton}>
+          <Button
+            onClick={() =>
+              updateLimits("accZ", accZUpperLimit, accZInferiorLimit)
+            }
+            sx={styles.setLimitButton}
+          >
             Definir
           </Button>
 
@@ -440,9 +417,12 @@ function App() {
               }}
             ></TextField>
           </Box>
-          <Button 
-          onClick={() => updateGyroXLimits()}
-          sx={styles.setLimitButton}>
+          <Button
+            onClick={() =>
+              updateLimits("gyroX", gyroXUpperLimit, gyroXInferiorLimit)
+            }
+            sx={styles.setLimitButton}
+          >
             Definir
           </Button>
 
@@ -473,9 +453,12 @@ function App() {
               }}
             ></TextField>
           </Box>
-          <Button 
-          onClick={() => updateGyroYLimits()}
-          sx={styles.setLimitButton}>
+          <Button
+            onClick={() =>
+              updateLimits("gyroY", gyroYUpperLimit, gyroYInferiorLimit)
+            }
+            sx={styles.setLimitButton}
+          >
             Definir
           </Button>
 
@@ -506,11 +489,40 @@ function App() {
               }}
             ></TextField>
           </Box>
-          <Button 
-          onClick={() => updateGyroZLimits()}
-          sx={styles.setLimitButton}>
+          <Button
+            onClick={() =>
+              updateLimits("gyroZ", gyroZUpperLimit, gyroZInferiorLimit)
+            }
+            sx={styles.setLimitButton}
+          >
             Definir
           </Button>
+
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <TextField
+              size="small"
+              label="Registre seu e-mail"
+              color="warning"
+              sx={{
+                background: "#FFF",
+              }}
+              onChange={(e) => {
+                setEmail(e.target.value);
+              }}
+            ></TextField>
+            <Button
+              size="small"
+              sx={styles.sendEmailButton}
+              onClick={() => register()}
+            >
+              Registrar
+            </Button>
+          </Box>
         </Box>
       </Box>
 
