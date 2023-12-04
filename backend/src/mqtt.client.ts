@@ -1,5 +1,6 @@
 import * as mqtt from 'mqtt';
 import { WebSocketServer } from './websocket.server';
+import { Alerts } from './services/alerts.services';
 
 export class MqttClient {
   private client: any;
@@ -13,7 +14,7 @@ export class MqttClient {
 
     this.client.on('message', (topic: any, message: any) => {
       if (topic === '68:C6:3A:88:CA:E9') {
-        console.log(`Mensagem recebida no tópico '${topic}': ${message.toString()}`);
+        Alerts.checkValuesAndSendAlerts(JSON.parse(message.toString()))
         wsServer.broadcastMessage(message.toString());
       }
     });

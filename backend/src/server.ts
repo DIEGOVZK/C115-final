@@ -4,7 +4,8 @@ import cors from 'cors';
 import express from 'express';
 import { WebSocketServer } from "./websocket.server";
 import { MqttClient } from "./mqtt.client";
-import routes from './routes';
+import routes from './routes/routes';
+import { Alerts } from './services/alerts.services';
 
 mongoose.connect('mongodb://root:example@localhost:27017/admin')
     .then(() => console.log('Connected!'));
@@ -24,3 +25,5 @@ app.use('/', routes);
 app.listen(HTTP_PORT, () => {
   console.log(`Servidor HTTP está rodando em http://localhost:${HTTP_PORT}`);
 });
+
+Alerts.getLimits()
