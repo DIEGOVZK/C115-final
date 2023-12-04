@@ -23,6 +23,7 @@
     "typescript": "^5.3.2"
   },
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.465.0",
     "@types/express": "^4.17.21",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
